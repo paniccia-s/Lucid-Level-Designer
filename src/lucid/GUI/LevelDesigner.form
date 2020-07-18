@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="lucid.GUI.LevelDesigner">
+  <grid id="27dc6" binding="mMainPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+    <constraints>
+      <xy x="20" y="20" width="723" height="400"/>
+    </constraints>
+    <properties>
+      <preferredSize width="1600" height="900"/>
+    </properties>
+    <border type="none"/>
+    <children>
+      <toolbar id="e0d79" binding="mToolBar">
+        <constraints border-constraint="North"/>
+        <properties>
+          <margin top="10" left="10" bottom="10" right="10"/>
+          <preferredSize width="1600" height="50"/>
+        </properties>
+        <border type="none"/>
+        <children>
+          <component id="e8f03" class="javax.swing.JButton" binding="mToolbarButtonNew">
+            <constraints/>
+            <properties>
+              <horizontalAlignment value="0"/>
+              <text value="New"/>
+            </properties>
+          </component>
+          <component id="5beb9" class="javax.swing.JButton" binding="mToolbarButtonLoad">
+            <constraints/>
+            <properties>
+              <text value="Load"/>
+            </properties>
+          </component>
+          <component id="4207" class="javax.swing.JButton" binding="mToolbarButtonSave">
+            <constraints/>
+            <properties>
+              <text value="Save"/>
+            </properties>
+          </component>
+          <component id="e6345" class="javax.swing.JToolBar$Separator">
+            <constraints/>
+            <properties/>
+          </component>
+          <component id="143da" class="javax.swing.JLabel" binding="mLabelWidth">
+            <constraints/>
+            <properties>
+              <text value="Width"/>
+            </properties>
+          </component>
+          <component id="cb683" class="javax.swing.JTextField" binding="mTextFieldWidth">
+            <constraints/>
+            <properties>
+              <maximumSize width="49" height="30"/>
+            </properties>
+          </component>
+          <component id="3ea1a" class="javax.swing.JLabel" binding="mLabelHeight">
+            <constraints/>
+            <properties>
+              <text value="Height"/>
+            </properties>
+          </component>
+          <component id="1d143" class="javax.swing.JTextField" binding="mTextFieldHeight">
+            <constraints/>
+            <properties>
+              <maximumSize width="49" height="30"/>
+            </properties>
+          </component>
+          <component id="9691a" class="javax.swing.JToolBar$Separator">
+            <constraints/>
+            <properties/>
+          </component>
+          <component id="fa9b" class="javax.swing.JRadioButton" binding="mRadioButtonNone">
+            <constraints/>
+            <properties>
+              <text value="None"/>
+            </properties>
+          </component>
+          <component id="8d83b" class="javax.swing.JRadioButton" binding="mRadioButtonFloor">
+            <constraints/>
+            <properties>
+              <text value="Floor"/>
+            </properties>
+          </component>
+          <component id="c603" class="javax.swing.JRadioButton" binding="mRadioButtonWall">
+            <constraints/>
+            <properties>
+              <text value="Wall"/>
+            </properties>
+          </component>
+          <component id="509c3" class="javax.swing.JToolBar$Separator">
+            <constraints/>
+            <properties/>
+          </component>
+          <component id="90667" class="javax.swing.JLabel" binding="mLabelError">
+            <constraints/>
+            <properties>
+              <text value=""/>
+            </properties>
+          </component>
+        </children>
+      </toolbar>
+      <grid id="b6b1b" binding="mGridPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+        <constraints border-constraint="Center"/>
+        <properties/>
+        <border type="none"/>
+        <children/>
+      </grid>
+    </children>
+  </grid>
+</form>

@@ -43,7 +43,7 @@
           <component id="6c0e4" class="javax.swing.JButton" binding="mToolbarButtonClear">
             <constraints/>
             <properties>
-              <text value="Button"/>
+              <text value="Clear"/>
             </properties>
           </component>
           <component id="e6345" class="javax.swing.JToolBar$Separator">
@@ -59,7 +59,7 @@
           <component id="5ba7f" class="lucid.GUI.ToolbarWidthHeightTextField" binding="mTextFieldWidth">
             <constraints/>
             <properties>
-              <preferredSize width="100" height="49"/>
+              <preferredSize width="20" height="49"/>
               <text value="32"/>
             </properties>
           </component>

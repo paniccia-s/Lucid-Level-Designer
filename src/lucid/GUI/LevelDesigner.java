@@ -125,7 +125,11 @@ public class LevelDesigner {
     }
 
     private void loadGrid() {
-
+        JFileChooser file = new JFileChooser();
+        if (file.showOpenDialog(mFrame) == JFileChooser.APPROVE_OPTION) {
+            mTileGrid = new TileGrid(file.getSelectedFile(), SerializationFormat.JSON);
+            drawGrid();
+        }
     }
 
     private void saveGrid() {
@@ -136,7 +140,10 @@ public class LevelDesigner {
     }
 
     private void clearGrid() {
-        if (mTileGrid != null) mTileGrid.clear();
+        if (mTileGrid != null) {
+            mTileGrid.clear();
+            drawGrid();
+        }
     }
 
     private void drawGrid() {

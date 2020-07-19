@@ -6,12 +6,10 @@ import lucid.serialization.RoomTemplate;
 import lucid.serialization.SerializationFormat;
 
 import java.awt.*;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
-import java.util.List;
-import java.io.File;
 import java.util.Arrays;
+import java.util.Scanner;
 
 /**
  * Tile grid.
@@ -31,6 +29,10 @@ public class TileGrid {
         mTiles = InitTiles();
 
         mActiveTileType = TileType.Floor;
+    }
+
+    public TileGrid(File file, SerializationFormat format) {
+        deserialize(file, format);
     }
 
     private Tile[] InitTiles() {
@@ -65,13 +67,13 @@ public class TileGrid {
     }
 
 
-    public void setActiveTileType(TileType type) {
-        mActiveTileType = type;
+    private boolean isIndexOnBorder(int index) {
+        int x = index % mWidth;
+        int y = index / mWidth;
+
+        return (x == 0 || x == mWidth - 1 || y == 0 || y == mHeight - 1);
     }
 
-    public Tile getTileAt(int index) {
-        return mTiles[index];
-    }
 
     public void clear() {
         // Revert tile types to floor
@@ -79,6 +81,16 @@ public class TileGrid {
             tile.setTileType(TileType.Floor);
             setDefaultBorderWalls();
         }
+    }
+
+    // vvv getters and setters vvv
+
+    public void setActiveTileType(TileType type) {
+        mActiveTileType = type;
+    }
+
+    public Tile getTileAt(int index) {
+        return mTiles[index];
     }
 
     public int getWidth() {
@@ -93,6 +105,8 @@ public class TileGrid {
         return Arrays.stream(mTiles).map((Tile::getColor)).toArray(Color[]::new);
     }
 
+    // vvv user interaction vvv
+
     public void handleMouseClick(Point locationOnScreen, int scale, Point topLeftOfGrid) {
         // scale down x and y to calculate index
         int startX = topLeftOfGrid.x;
@@ -104,6 +118,8 @@ public class TileGrid {
 
         mTiles[index].setTileType(mActiveTileType);
     }
+
+    // vvv (de)serialization vvv
 
     public void serialize(File saveFile, SerializationFormat format) {
         switch (format) {
@@ -130,6 +146,7 @@ public class TileGrid {
             e.printStackTrace();
         }
     }
+
 
     private RoomTemplate CreateRoomTemplate() {
         RoomTemplate template = new RoomTemplate();
@@ -185,6 +202,16 @@ public class TileGrid {
         return template;
     }
 
+    private RoomTemplate.Dimensions getRoomTemplateDimensions() {
+        RoomTemplate.Dimensions dim = new RoomTemplate.Dimensions();
+
+        dim.width = mWidth;
+        dim.height = mHeight;
+        dim.tileSize = 4;  // !TODO
+
+        return dim;
+    }
+
     private RoomTemplate.EnemyNest CreateRoomTemplateNest(Tile tile) {
         RoomTemplate.EnemyNest nest = new RoomTemplate.EnemyNest();
 
@@ -221,20 +248,96 @@ public class TileGrid {
         return wall;
     }
 
-    private boolean isIndexOnBorder(int index) {
-        int x = index % mWidth;
-        int y = index / mWidth;
 
-        return (x == 0 || x == mWidth - 1 || y == 0 || y == mHeight - 1);
+    public void deserialize(File loadFile, SerializationFormat format) {
+        switch(format) {
+            case JSON:
+                deserializeJson(loadFile);
+                break;
+            default:
+                throw new IllegalArgumentException("Unimplemented SerializationFormat in deserialize()!");
+        }
     }
 
-    private RoomTemplate.Dimensions getRoomTemplateDimensions() {
-        RoomTemplate.Dimensions dim = new RoomTemplate.Dimensions();
+    private void deserializeJson(File loadFile) {
+        // Deserialize the contents of the file
+        RoomTemplate template = null;
 
-        dim.width = mWidth;
-        dim.height = mHeight;
-        dim.tileSize = 4;  // !TODO
+        try {
+            Scanner scanner = new Scanner(loadFile);
+            StringBuilder data = new StringBuilder(128);
 
-        return dim;
+            while (scanner.hasNext()) {
+                data.append(scanner.nextLine());
+            }
+
+            Gson gson = new Gson();
+            template = gson.fromJson(data.toString(), RoomTemplate.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+        
+        // Fill grid
+        fillGridFromTemplate(template);
+    }
+
+    private void fillGridFromTemplate(RoomTemplate template) {
+        // Set grid dimensions
+        setRoomTemplateDimensions(template.dimensions);
+
+        // Iterate over the rest of the elements
+        for (RoomTemplate.Wall wall : template.walls) {
+            checkCreatingNonBorderTile(wall.index);
+            createWall(wall);
+        }
+        for (RoomTemplate.EnemyNest nest : template.enemyNests) {
+            checkCreatingNonBorderTile(nest.index);
+            createEnemyNest(nest);
+        }
+        for (RoomTemplate.Treasure treasure : template.treasures) {
+            checkCreatingNonBorderTile(treasure.index);
+            createTreasure(treasure);
+        }
+        for (RoomTemplate.POI poi : template.pois) {
+            checkCreatingNonBorderTile(poi.index);
+            createPOI(poi);
+        }
+    }
+
+    private void setRoomTemplateDimensions(RoomTemplate.Dimensions dimensions) {
+        mWidth = dimensions.width;
+        mHeight = dimensions.height;
+        // !TODO deal with size
+
+        mTiles = new Tile[mWidth * mHeight];
+        for (int i = 0; i < mWidth * mHeight; i++) {
+            mTiles[i] = new Tile(i, TileType.Floor);
+        }
+
+        setDefaultBorderWalls();
+    }
+
+    private void createWall(RoomTemplate.Wall wall) {
+        mTiles[wall.index].setTileType(TileType.Wall);
+    }
+
+    private void createEnemyNest(RoomTemplate.EnemyNest nest) {
+        mTiles[nest.index].setTileType(TileType.Nest);
+    }
+
+    private void createTreasure(RoomTemplate.Treasure treasure) {
+        mTiles[treasure.index].setTileType(TileType.Treasure);
+    }
+
+    private void createPOI(RoomTemplate.POI poi) {
+        mTiles[poi.index].setTileType(TileType.POI);
+    }
+
+    private void checkCreatingNonBorderTile(int index) {
+        if (isIndexOnBorder(index)) {
+            // !TODO
+            throw new IllegalArgumentException("Index on border");
+        }
     }
 }

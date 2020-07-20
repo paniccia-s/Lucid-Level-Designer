@@ -5,7 +5,12 @@ import lucid.grid.TileType;
 import lucid.serialization.SerializationFormat;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.*;
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class LevelDesigner {
     private JPanel mMainPanel;
@@ -27,9 +32,15 @@ public class LevelDesigner {
     private JRadioButton mRadioButtonPOI;
     private JButton mToolbarButtonClear;
 
-    private JFrame mFrame;
+    private final JFrame mFrame;
 
     private TileGrid mTileGrid;
+
+    public static final String PATH = getPath();
+
+    private static String getPath() {
+        return Paths.get("").toAbsolutePath().toString();
+    }
 
     public LevelDesigner() {
         mFrame = new JFrame("Lucid Level Editor");
@@ -126,6 +137,11 @@ public class LevelDesigner {
 
     private void loadGrid() {
         JFileChooser file = new JFileChooser();
+
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON Files", "json");
+        file.setFileFilter(filter);
+        file.setCurrentDirectory(new File(PATH));
+
         if (file.showOpenDialog(mFrame) == JFileChooser.APPROVE_OPTION) {
             mTileGrid = new TileGrid(file.getSelectedFile(), SerializationFormat.JSON);
             drawGrid();
@@ -134,8 +150,25 @@ public class LevelDesigner {
 
     private void saveGrid() {
         JFileChooser file = new JFileChooser();
-        if (file.showSaveDialog(mFrame) == JFileChooser.APPROVE_OPTION) {
-            mTileGrid.serialize(file.getSelectedFile(), SerializationFormat.JSON);
+
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON Files", "json");
+        file.setFileFilter(filter);
+        file.setCurrentDirectory(new File(PATH));
+
+
+        if (!(file.showSaveDialog(mFrame) == JFileChooser.APPROVE_OPTION)) {
+            return;
+        }
+
+        try {
+            File selectedFile = file.getSelectedFile();
+            if (!selectedFile.getName().contains(".")) {
+                selectedFile = new File(selectedFile + ".json");
+            }
+            mTileGrid.serialize(selectedFile, SerializationFormat.JSON);
+            mLabelError.setText("");
+        } catch (RuntimeException e) {
+            mLabelError.setText(e.getMessage());
         }
     }
 

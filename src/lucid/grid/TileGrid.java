@@ -7,9 +7,7 @@ import lucid.serialization.SerializationFormat;
 
 import java.awt.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * Tile grid.
@@ -66,6 +64,26 @@ public class TileGrid {
         }
     }
 
+    /**
+     * Returns the border indices in no particular order.
+     */
+    private int[] getBorderIndices() {
+        int[] indices = new int[(mWidth * 2) + ((mHeight - 2) * 2)];
+        int index = 0;
+
+        for (int x = 0; x < mWidth; x++) {
+            indices[index++] = x;
+            indices[index++] = (mWidth * mHeight) - x - 1;
+        }
+
+        for (int y = 1; y < mHeight - 1; y++) {
+            indices[index++] = y * mWidth;
+            indices[index++] = (y + 1) * mWidth - 1;
+        }
+
+        return indices;
+    }
+
 
     private boolean isIndexOnBorder(int index) {
         int x = index % mWidth;
@@ -89,10 +107,6 @@ public class TileGrid {
         mActiveTileType = type;
     }
 
-    public Tile getTileAt(int index) {
-        return mTiles[index];
-    }
-
     public int getWidth() {
         return mWidth;
     }
@@ -103,6 +117,77 @@ public class TileGrid {
 
     public Color[] getTileColors() {
         return Arrays.stream(mTiles).map((Tile::getColor)).toArray(Color[]::new);
+    }
+
+    // vvv neighbors vvv
+
+    private int[] getNeighbors(int index) {
+        int[] neighbors = new int[4];
+        int neighborsAdded = 0;
+
+        // North
+        if (index >= mWidth) {
+            neighbors[neighborsAdded++] = index - mWidth;
+        }
+        // East
+        if (index % mWidth < mWidth - 1) {
+            neighbors[neighborsAdded++] = index + 1;
+        }
+        // South
+        if (index <= mTiles.length - mWidth) {
+            neighbors[neighborsAdded++] = index + mWidth;
+        }
+        // West
+        if (index % mWidth > 0) {
+            neighbors[neighborsAdded++] = index - 1;
+        }
+
+        if (neighborsAdded == 4) {
+            return neighbors;
+        }
+
+        int[] actualNeighbors = new int[neighborsAdded];
+        System.arraycopy(neighbors, 0, actualNeighbors, 0, neighborsAdded);
+
+        return actualNeighbors;
+    }
+
+    private int[] getNeighborsWithDiagonals(int index) {
+        // Get normal neighbors
+        int[] cardinalNeighbors = getNeighbors(index);
+
+        // Calculate diagonal neighbors
+        int[] neighbors = new int[4];
+        int neighborsAdded = 0;
+
+        // Northeast
+        if (index > mWidth && (index % mWidth) > 0) {
+            neighbors[neighborsAdded++] = index - mWidth + 1;
+        }
+        // Southeast
+        if (index < mTiles.length - mWidth - 1 && (index % mWidth) < mWidth - 1) {
+            neighbors[neighborsAdded++] = index + mWidth + 1;
+        }
+        // Southwest
+        if (index < mTiles.length - mWidth - 1 && (index % mWidth) > 0) {
+            neighbors[neighborsAdded++] = index + mWidth - 1;
+        }
+        // Northwest
+        if (index > mWidth && (index % mWidth) < mWidth - 1) {
+            neighbors[neighborsAdded++] = index - mWidth - 1;
+        }
+
+        int[] allNeighbors = new int[cardinalNeighbors.length + neighborsAdded];
+        int i = 0;
+
+        for (int c : cardinalNeighbors) {
+            allNeighbors[i++] = c;
+        }
+        for (int j = 0; j < neighborsAdded; j++) {
+            allNeighbors[i++] = neighbors[j];
+        }
+
+        return allNeighbors;
     }
 
     // vvv user interaction vvv
@@ -121,7 +206,63 @@ public class TileGrid {
 
     // vvv (de)serialization vvv
 
-    public void serialize(File saveFile, SerializationFormat format) {
+    private void throwIfBoardIsInvalid() throws RuntimeException {
+        // Strategy: iterate border tiles, continue if Wall; if None, dfs for walls; any other tile found is invalid
+        int[] borderIndices = getBorderIndices();
+
+        for (int index : borderIndices) {
+            Tile tile = mTiles[index];
+            switch (tile.getTileType()) {
+                case Wall:
+                    // Fine - continue to the next
+                    break;
+                case None:
+                    // Search for invalid
+                    if (!isBorderTileEncasedByWalls(index)) {
+                        throw new RuntimeException(String.format("Tile at index %d is not encased by walls!", index));
+                    }
+                    break;
+                default:
+                    // Bad!
+                    throw new RuntimeException(String.format("Tile at index %d contains invalid tile type %s", index, tile.getTileType()));
+            }
+        }
+    }
+
+    private boolean isBorderTileEncasedByWalls(int index) {
+        Set<Integer> seen = new HashSet<Integer>();
+        Stack<Integer> dfs = new Stack<>();
+        dfs.push(index);
+
+        // DFS the index, stopping at walls
+        while (!dfs.empty()) {
+            int tile = dfs.pop();
+            seen.add(tile);
+
+            int[] neighbors = getNeighborsWithDiagonals(tile);
+            for (int neighbor : neighbors) {
+                // Pass if wall; push if none, else return
+                switch (mTiles[neighbor].getTileType()) {
+                    case Wall:
+                        break;
+                    case None:
+                        if (!seen.contains(neighbor)) {
+                            dfs.push(neighbor);
+                        }
+                        break;
+                    default:
+                        return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public void serialize(File saveFile, SerializationFormat format) throws RuntimeException {
+        // Ensure that the board is valid
+        throwIfBoardIsInvalid();
+
         switch (format) {
             case JSON:
                 serializeJson(saveFile);
@@ -131,7 +272,7 @@ public class TileGrid {
         }
     }
 
-    private void serializeJson(File saveFile) {
+    private void serializeJson(File saveFile) throws RuntimeException {
         // Must create a room template from the tile data
         RoomTemplate template = CreateRoomTemplate();
 
@@ -148,28 +289,19 @@ public class TileGrid {
     }
 
 
-    private RoomTemplate CreateRoomTemplate() {
+    private RoomTemplate CreateRoomTemplate() throws RuntimeException {
         RoomTemplate template = new RoomTemplate();
 
         // Create the dimensions first
         template.dimensions = getRoomTemplateDimensions();
 
         // Iterate the tiles to find the rest
-        ArrayList<RoomTemplate.Wall> walls = new ArrayList<RoomTemplate.Wall>();
-        ArrayList<RoomTemplate.EnemyNest> nests = new ArrayList<RoomTemplate.EnemyNest>();
-        ArrayList<RoomTemplate.Treasure> treasures = new ArrayList<RoomTemplate.Treasure>();
-        ArrayList<RoomTemplate.POI> pois = new ArrayList<RoomTemplate.POI>();
+        ArrayList<RoomTemplate.Wall> walls = new ArrayList<>();
+        ArrayList<RoomTemplate.EnemyNest> nests = new ArrayList<>();
+        ArrayList<RoomTemplate.Treasure> treasures = new ArrayList<>();
+        ArrayList<RoomTemplate.POI> pois = new ArrayList<>();
 
         for (Tile tile : mTiles) {
-            // !TODO
-            if (isIndexOnBorder(tile.getIndex())) {
-                if (tile.getTileType() != TileType.Wall) {
-                    // !TODO
-                    throw new RuntimeException("Border tile is not wall at index " + tile.getIndex() + "!");
-                }
-                continue;
-            }
-
             switch (tile.getTileType()) {
                 case None:
                 case Floor:
@@ -249,7 +381,7 @@ public class TileGrid {
     }
 
 
-    public void deserialize(File loadFile, SerializationFormat format) {
+    private void deserialize(File loadFile, SerializationFormat format) {
         switch(format) {
             case JSON:
                 deserializeJson(loadFile);
@@ -261,7 +393,7 @@ public class TileGrid {
 
     private void deserializeJson(File loadFile) {
         // Deserialize the contents of the file
-        RoomTemplate template = null;
+        RoomTemplate template;
 
         try {
             Scanner scanner = new Scanner(loadFile);

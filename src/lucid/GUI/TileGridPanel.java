@@ -8,8 +8,10 @@ public class TileGridPanel extends JPanel {
     private int mWidth, mHeight, mScale;
     private Color[] mColors;
 
-    public void acceptTileColors(Color[] colors, int width, int height, int scale) {
-        mColors = colors; mWidth = width; mHeight = height; mScale = scale;
+    private boolean mShowIndices;
+
+    public void acceptRenderInfo(Color[] colors, int width, int height, int scale, boolean showIndices) {
+        mColors = colors; mWidth = width; mHeight = height; mScale = scale; mShowIndices = showIndices;
         repaint();
     }
 
@@ -29,6 +31,9 @@ public class TileGridPanel extends JPanel {
         int offX = (getWidth() - (mWidth * mScale)) / 2;
         int offY = (getHeight() - (mHeight * mScale)) / 2;
 
+        // Get font info before looping
+        FontMetrics font = gg.getFontMetrics();
+
         for (int y = 0; y < mHeight; y++)
         {
             for (int x = 0; x < mWidth; x++)
@@ -40,6 +45,16 @@ public class TileGridPanel extends JPanel {
 
                 gg.setColor(color);
                 gg.fillRect(posX, posY, mScale, mScale);
+
+                if (!mShowIndices) continue;
+
+                int posYStr = posY + font.getHeight();
+
+                double Y = (299 * color.getRed() + 587 * color.getGreen() + 114 * color.getBlue()) / 1000f;
+                Color textColor = Y >= 128 ? Color.black : Color.white;
+
+                gg.setColor(textColor);
+                gg.drawString(String.valueOf(index), posX, posYStr);
             }
         }
     }

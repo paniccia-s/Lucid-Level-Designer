@@ -5,11 +5,9 @@ import lucid.grid.TileType;
 import lucid.serialization.SerializationFormat;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.*;
 import java.io.File;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class LevelDesigner {
@@ -31,6 +29,7 @@ public class LevelDesigner {
     private JRadioButton mRadioButtonTreasure;
     private JRadioButton mRadioButtonPOI;
     private JButton mToolbarButtonClear;
+    private JCheckBox mCheckBoxShowIndices;
 
     private final JFrame mFrame;
 
@@ -62,6 +61,12 @@ public class LevelDesigner {
                 super.mouseReleased(e);
 
                 mTileGrid.handleMouseClick(e.getPoint(), calculateScale(), mCanvas.getTopLeftOfTileGrid());
+                drawGrid();
+            }
+        });
+        mCheckBoxShowIndices.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
                 drawGrid();
             }
         });
@@ -180,12 +185,15 @@ public class LevelDesigner {
     }
 
     private void drawGrid() {
+        if (mTileGrid == null) return;
+
         int scale = calculateScale();
         drawGrid(scale);
     }
 
     private void drawGrid(int scale) {
-        mCanvas.acceptTileColors(mTileGrid.getTileColors(), mTileGrid.getWidth(), mTileGrid.getHeight(), scale);
+        mCanvas.acceptRenderInfo(mTileGrid.getTileColors(), mTileGrid.getWidth(), mTileGrid.getHeight(),
+                scale, mCheckBoxShowIndices.isSelected());
     }
 
 

@@ -84,7 +84,6 @@ public class TileGrid {
         return indices;
     }
 
-
     private boolean isIndexOnBorder(int index) {
         int x = index % mWidth;
         int y = index / mWidth;

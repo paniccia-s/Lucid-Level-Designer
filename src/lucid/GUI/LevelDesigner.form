@@ -2,7 +2,7 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="lucid.GUI.LevelDesigner">
   <grid id="27dc6" binding="mMainPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
-      <xy x="20" y="20" width="1194" height="400"/>
+      <xy x="20" y="20" width="1308" height="400"/>
     </constraints>
     <properties>
       <preferredSize width="1600" height="900"/>
@@ -113,6 +113,16 @@
             <constraints/>
             <properties>
               <text value="POI"/>
+            </properties>
+          </component>
+          <component id="afb4a" class="javax.swing.JToolBar$Separator">
+            <constraints/>
+            <properties/>
+          </component>
+          <component id="ff143" class="javax.swing.JCheckBox" binding="mCheckBoxShowIndices">
+            <constraints/>
+            <properties>
+              <text value="Show Indices"/>
             </properties>
           </component>
           <component id="509c3" class="javax.swing.JToolBar$Separator">

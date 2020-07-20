@@ -24,12 +24,13 @@ public class LevelDesigner {
     private JTextField mTextFieldWidth;
     private JLabel mLabelHeight;
     private JTextField mTextFieldHeight;
-    private JLabel mLabelError;
     private JRadioButton mRadioButtonEnemyNest;
     private JRadioButton mRadioButtonTreasure;
     private JRadioButton mRadioButtonPOI;
     private JButton mToolbarButtonClear;
     private JCheckBox mCheckBoxShowIndices;
+    private JTextArea mTextAreaConsole;
+    private JButton mButtonClearConsole;
 
     private final JFrame mFrame;
 
@@ -60,6 +61,9 @@ public class LevelDesigner {
             public void mouseReleased(MouseEvent e) {
                 super.mouseReleased(e);
 
+                // Make sure that the canvas was clicked
+                if (e.getY() >= mCanvas.getHeight() || e.getX() >= mCanvas.getWidth()) return;
+
                 mTileGrid.handleMouseClick(e.getPoint(), calculateScale(), mCanvas.getTopLeftOfTileGrid());
                 drawGrid();
             }
@@ -68,6 +72,14 @@ public class LevelDesigner {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 drawGrid();
+            }
+        });
+
+        mTextAreaConsole.setEditable(false);
+        mButtonClearConsole.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mTextAreaConsole.setText("");
             }
         });
     }
@@ -131,7 +143,7 @@ public class LevelDesigner {
             width = Integer.parseInt(widthString);
             height = Integer.parseInt(heightString);
         } catch (NumberFormatException e) {
-            mLabelError.setText("Illegal width or height!");
+            mTextAreaConsole.append("Illegal width or height!" + System.lineSeparator());
             return;
         }
 
@@ -171,9 +183,8 @@ public class LevelDesigner {
                 selectedFile = new File(selectedFile + ".json");
             }
             mTileGrid.serialize(selectedFile, SerializationFormat.JSON);
-            mLabelError.setText("");
         } catch (RuntimeException e) {
-            mLabelError.setText(e.getMessage());
+            mTextAreaConsole.append(e.getMessage() + System.lineSeparator());
         }
     }
 

@@ -135,7 +135,7 @@
       <component id="f0802" class="lucid.GUI.TileGridPanel" binding="mCanvas">
         <constraints border-constraint="Center"/>
         <properties>
-          <preferredSize width="1600" height="850"/>
+          <preferredSize width="1400" height="850"/>
         </properties>
       </component>
       <grid id="9d516" layout-manager="BorderLayout" hgap="0" vgap="0">
@@ -162,6 +162,31 @@
               <preferredSize width="100" height="150"/>
               <text value="Clear"/>
             </properties>
+          </component>
+        </children>
+      </grid>
+      <grid id="5eaf9" layout-manager="BorderLayout" hgap="0" vgap="0">
+        <constraints border-constraint="East"/>
+        <properties>
+          <autoscrolls value="true"/>
+          <background color="-1313025"/>
+          <preferredSize width="200" height="850"/>
+        </properties>
+        <border type="none"/>
+        <children>
+          <component id="c0aeb" class="javax.swing.JLabel" binding="mLabelInspectorTitle">
+            <constraints border-constraint="North"/>
+            <properties>
+              <font size="26"/>
+              <horizontalAlignment value="0"/>
+              <horizontalTextPosition value="0"/>
+              <text value="Inspector"/>
+              <verticalTextPosition value="0"/>
+            </properties>
+          </component>
+          <component id="bd155" class="lucid.GUI.InspectorPanel" binding="mPanelInspector">
+            <constraints border-constraint="Center"/>
+            <properties/>
           </component>
         </children>
       </grid>

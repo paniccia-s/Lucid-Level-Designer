@@ -1,11 +1,13 @@
 package lucid.GUI;
 
+import lucid.grid.Tile;
 import lucid.grid.TileGrid;
 import lucid.grid.TileType;
 import lucid.serialization.SerializationFormat;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.nio.file.Paths;
@@ -31,6 +33,8 @@ public class LevelDesigner {
     private JCheckBox mCheckBoxShowIndices;
     private JTextArea mTextAreaConsole;
     private JButton mButtonClearConsole;
+    private JLabel mLabelInspectorTitle;
+    private InspectorPanel mPanelInspector;
 
     private final JFrame mFrame;
 
@@ -60,12 +64,7 @@ public class LevelDesigner {
             @Override
             public void mouseReleased(MouseEvent e) {
                 super.mouseReleased(e);
-
-                // Make sure that the canvas was clicked
-                if (e.getY() >= mCanvas.getHeight() || e.getX() >= mCanvas.getWidth()) return;
-
-                mTileGrid.handleMouseClick(e.getPoint(), calculateScale(), mCanvas.getTopLeftOfTileGrid());
-                drawGrid();
+                handleMouse(e);
             }
         });
         mCheckBoxShowIndices.addItemListener(new ItemListener() {
@@ -82,6 +81,23 @@ public class LevelDesigner {
                 mTextAreaConsole.setText("");
             }
         });
+
+        mTextAreaConsole.append("Hi! Errors are reported to this console." + System.lineSeparator());
+        mTextAreaConsole.append("Right-click on a tile to edit its fields." + System.lineSeparator());
+    }
+
+    private void handleMouse(MouseEvent e) {
+        // Make sure that the canvas was clicked
+        if (e.getY() >= mCanvas.getHeight() || e.getX() >= mCanvas.getWidth()) return;
+
+        // Determine what to do based on click
+        if (e.getButton() == MouseEvent.BUTTON1) {
+            mTileGrid.handleMouseClick(e.getPoint(), calculateScale(), mCanvas.getTopLeftOfTileGrid());
+        }
+        else if (e.getButton() == MouseEvent.BUTTON3) {
+            populateInspector(e.getPoint());
+        }
+        drawGrid();
     }
 
     private void addButtonActionListeners() {
@@ -131,6 +147,7 @@ public class LevelDesigner {
     private void setSelectedTileType(TileType type) {
         mTileGrid.setActiveTileType(type);
     }
+
 
     private void createNewGrid() {
         // Try to parse the width and height
@@ -208,6 +225,16 @@ public class LevelDesigner {
     }
 
 
+    private void populateInspector(Point point) {
+        // Get the clicked tile
+        Tile tile = mTileGrid.getTileAt(point, calculateScale(), mCanvas.getTopLeftOfTileGrid());
+        if (tile == null) return;
+
+        // Instruct the tile to paint itself on the inspector panel
+        tile.renderOnInspector(mPanelInspector);
+    }
+
+
     private int calculateScale() {
         // Leave one tile of padding in each dimension
         int scaleX = mCanvas.getWidth() / (mTileGrid.getWidth() + 1);
@@ -215,5 +242,4 @@ public class LevelDesigner {
 
         return Math.min(scaleX, scaleY);
     }
-
 }

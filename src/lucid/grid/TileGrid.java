@@ -191,16 +191,41 @@ public class TileGrid {
 
     // vvv user interaction vvv
 
-    public void handleMouseClick(Point locationOnScreen, int scale, Point topLeftOfGrid) {
+    public void handleMouseClick(Point click, int scale, Point topLeftOfGrid) {
+        // Make sure that invalid clicks don't continue
+        if (isClickNotOnGrid(click, scale, topLeftOfGrid)) return;
+
         // scale down x and y to calculate index
+        int index = getTileIndexFromMouseClick(click, scale, topLeftOfGrid);
+
+        mTiles[index].setTileType(mActiveTileType);
+    }
+
+    private int getTileIndexFromMouseClick(Point click, int scale, Point topLeftOfGrid) {
+        if (isClickNotOnGrid(click, scale, topLeftOfGrid)) return -1;
+
+        return getTileIndexFromMouseClickUnchecked(click, scale, topLeftOfGrid);
+    }
+
+    private int getTileIndexFromMouseClickUnchecked(Point click, int scale, Point topLeftOfGrid) {
         int startX = topLeftOfGrid.x;
         int startY = topLeftOfGrid.y;
 
-        int x = (locationOnScreen.x - startX) / scale;
-        int y = (locationOnScreen.y - startY) / scale;
-        int index = x + y * mWidth;
+        int x = (click.x - startX) / scale;
+        int y = (click.y - startY) / scale;
 
-        mTiles[index].setTileType(mActiveTileType);
+        return x + y * mWidth;
+    }
+
+    private boolean isClickNotOnGrid(Point click, int scale, Point topLeftOfGrid) {
+        int clickX = click.x - topLeftOfGrid.x;
+        int clickY = click.y - topLeftOfGrid.y;
+        return clickX < 0 || clickX > mWidth * scale || clickY < 0 || clickY > mHeight * scale;
+    }
+
+    public Tile getTileAt(Point click, int scale, Point topLeftOfGrid) {
+        int index = getTileIndexFromMouseClick(click, scale, topLeftOfGrid);
+        return (index != -1) ? mTiles[index] : null;
     }
 
     // vvv (de)serialization vvv
@@ -344,15 +369,7 @@ public class TileGrid {
     }
 
     private RoomTemplate.EnemyNest CreateRoomTemplateNest(Tile tile) {
-        RoomTemplate.EnemyNest nest = new RoomTemplate.EnemyNest();
-
-        nest.index = tile.getIndex();
-        nest.spawnChance = 1f;
-        nest.spawnAttemptsMin = 1;
-        nest.spawnAttemptsMax = 1;
-        nest.spawnRadius = 3;
-
-        return nest;
+        return tile.getEnemyNest();
     }
 
     private RoomTemplate.Treasure CreateRoomTemplateTreasure(Tile tile) {

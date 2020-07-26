@@ -4,6 +4,7 @@ public class RoomTemplate {
 
     public Dimensions dimensions;
     public Wall[] walls;
+    public None[] nones;
     public EnemyNest[] enemyNests;
     public POI[] pois;
     public Treasure[] treasures;
@@ -35,6 +36,11 @@ public class RoomTemplate {
     public static class Dimensions
     {
         public int width, height, tileSize;
+    }
+
+    public static class None
+    {
+        public int index;
     }
 
 }

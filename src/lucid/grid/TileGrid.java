@@ -133,7 +133,7 @@ public class TileGrid {
             neighbors[neighborsAdded++] = index + 1;
         }
         // South
-        if (index <= mTiles.length - mWidth) {
+        if (index <= mTiles.length - mWidth - 1) {
             neighbors[neighborsAdded++] = index + mWidth;
         }
         // West
@@ -160,7 +160,7 @@ public class TileGrid {
         int neighborsAdded = 0;
 
         // Northeast
-        if (index > mWidth && (index % mWidth) > 0) {
+        if (index > mWidth && (index % mWidth) < mWidth - 1) {
             neighbors[neighborsAdded++] = index - mWidth + 1;
         }
         // Southeast
@@ -172,7 +172,7 @@ public class TileGrid {
             neighbors[neighborsAdded++] = index + mWidth - 1;
         }
         // Northwest
-        if (index > mWidth && (index % mWidth) < mWidth - 1) {
+        if (index > mWidth && (index % mWidth) > 0) {
             neighbors[neighborsAdded++] = index - mWidth - 1;
         }
 
@@ -254,13 +254,16 @@ public class TileGrid {
     }
 
     private boolean isBorderTileEncasedByWalls(int index) {
-        Set<Integer> seen = new HashSet<Integer>();
+        Set<Integer> seen = new HashSet<>();
         Stack<Integer> dfs = new Stack<>();
         dfs.push(index);
 
         // DFS the index, stopping at walls
         while (!dfs.empty()) {
             int tile = dfs.pop();
+
+            if (seen.contains(tile)) continue;
+
             seen.add(tile);
 
             int[] neighbors = getNeighborsWithDiagonals(tile);
@@ -321,6 +324,7 @@ public class TileGrid {
 
         // Iterate the tiles to find the rest
         ArrayList<RoomTemplate.Wall> walls = new ArrayList<>();
+        ArrayList<RoomTemplate.None> nones = new ArrayList<>();
         ArrayList<RoomTemplate.EnemyNest> nests = new ArrayList<>();
         ArrayList<RoomTemplate.Treasure> treasures = new ArrayList<>();
         ArrayList<RoomTemplate.POI> pois = new ArrayList<>();
@@ -328,29 +332,32 @@ public class TileGrid {
         for (Tile tile : mTiles) {
             switch (tile.getTileType()) {
                 case None:
+                    // Add a new none
+                    nones.add(createRoomTemplateNone(tile));
                 case Floor:
-                    // Do nothing for these
+                    // Floors are inherent in the template
                     break;
                 case Wall:
                     // Add a new wall
-                    walls.add(CreateRoomTemplateWall(tile));
+                    walls.add(createRoomTemplateWall(tile));
                     break;
                 case Nest:
                     // Add a new nest
-                    nests.add(CreateRoomTemplateNest(tile));
+                    nests.add(createRoomTemplateNest(tile));
                     break;
                 case Treasure:
                     // Add a new treasure
-                    treasures.add(CreateRoomTemplateTreasure(tile));
+                    treasures.add(createRoomTemplateTreasure(tile));
                     break;
                 case POI:
                     // Add a new POI
-                    pois.add(CreateRoomTemplatePOI(tile));
+                    pois.add(createRoomTemplatePOI(tile));
                     break;
             }
         }
 
         template.walls = walls.toArray(new RoomTemplate.Wall[0]);
+        template.nones = nones.toArray(new RoomTemplate.None[0]);
         template.enemyNests = nests.toArray(new RoomTemplate.EnemyNest[0]);
         template.treasures = treasures.toArray(new RoomTemplate.Treasure[0]);
         template.pois = pois.toArray(new RoomTemplate.POI[0]);
@@ -368,11 +375,11 @@ public class TileGrid {
         return dim;
     }
 
-    private RoomTemplate.EnemyNest CreateRoomTemplateNest(Tile tile) {
+    private RoomTemplate.EnemyNest createRoomTemplateNest(Tile tile) {
         return tile.getEnemyNest();
     }
 
-    private RoomTemplate.Treasure CreateRoomTemplateTreasure(Tile tile) {
+    private RoomTemplate.Treasure createRoomTemplateTreasure(Tile tile) {
         RoomTemplate.Treasure treasure = new RoomTemplate.Treasure();
 
         treasure.index = tile.getIndex();
@@ -380,7 +387,7 @@ public class TileGrid {
         return treasure;
     }
 
-    private RoomTemplate.POI CreateRoomTemplatePOI(Tile tile) {
+    private RoomTemplate.POI createRoomTemplatePOI(Tile tile) {
         RoomTemplate.POI poi = new RoomTemplate.POI();
 
         poi.index = tile.getIndex();
@@ -388,12 +395,20 @@ public class TileGrid {
         return poi;
     }
 
-    private RoomTemplate.Wall CreateRoomTemplateWall(Tile tile) {
+    private RoomTemplate.Wall createRoomTemplateWall(Tile tile) {
         RoomTemplate.Wall wall = new RoomTemplate.Wall();
 
         wall.index = tile.getIndex();
 
         return wall;
+    }
+
+    private RoomTemplate.None createRoomTemplateNone(Tile tile) {
+        RoomTemplate.None none = new RoomTemplate.None();
+
+        none.index = tile.getIndex();
+
+        return none;
     }
 
 
@@ -436,8 +451,10 @@ public class TileGrid {
 
         // Iterate over the rest of the elements
         for (RoomTemplate.Wall wall : template.walls) {
-            checkCreatingNonBorderTile(wall.index);
             createWall(wall);
+        }
+        for (RoomTemplate.None none : template.nones) {
+            createNone(none);
         }
         for (RoomTemplate.EnemyNest nest : template.enemyNests) {
             checkCreatingNonBorderTile(nest.index);
@@ -462,8 +479,6 @@ public class TileGrid {
         for (int i = 0; i < mWidth * mHeight; i++) {
             mTiles[i] = new Tile(i, TileType.Floor);
         }
-
-        setDefaultBorderWalls();
     }
 
     private void createWall(RoomTemplate.Wall wall) {
@@ -482,10 +497,14 @@ public class TileGrid {
         mTiles[poi.index].setTileType(TileType.POI);
     }
 
+    private void createNone(RoomTemplate.None none) {
+        mTiles[none.index].setTileType(TileType.None);
+    }
+
     private void checkCreatingNonBorderTile(int index) {
         if (isIndexOnBorder(index)) {
             // !TODO
-            throw new IllegalArgumentException("Index on border");
+            throw new IllegalArgumentException("Index on border: " + index);
         }
     }
 }

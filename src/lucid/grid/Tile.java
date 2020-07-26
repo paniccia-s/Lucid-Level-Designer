@@ -64,6 +64,7 @@ public class Tile {
         RoomTemplate.EnemyNest nest = new RoomTemplate.EnemyNest();
 
         try {
+            nest.index = mIndex;
             nest.spawnRadius = Integer.parseInt(mNest.spawnRadius);
             nest.spawnChance = Float.parseFloat(mNest.spawnChance);
             nest.spawnAttemptsMin = Integer.parseInt(mNest.spawnAttemptsMin);

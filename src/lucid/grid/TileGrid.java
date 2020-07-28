@@ -20,17 +20,19 @@ public class TileGrid {
 
     private TileType mActiveTileType;
 
-    public TileGrid(int width, int height) {
+    public TileGrid(int width, int height, TileType currentTileType) {
         mWidth = width;
         mHeight = height;
 
         mTiles = InitTiles();
 
-        mActiveTileType = TileType.Floor;
+        mActiveTileType = currentTileType;
     }
 
-    public TileGrid(File file, SerializationFormat format) {
+    public TileGrid(File file, SerializationFormat format, TileType currentTileType) {
         deserialize(file, format);
+
+        mActiveTileType = currentTileType;
     }
 
     private Tile[] InitTiles() {
@@ -238,11 +240,12 @@ public class TileGrid {
             Tile tile = mTiles[index];
             switch (tile.getTileType()) {
                 case Wall:
+                case Door:
                     // Fine - continue to the next
                     break;
                 case None:
                     // Search for invalid
-                    if (!isBorderTileEncasedByWalls(index)) {
+                    if (!isBorderTileEncasedByWallsOrDoors(index)) {
                         throw new RuntimeException(String.format("Tile at index %d is not encased by walls!", index));
                     }
                     break;
@@ -253,12 +256,12 @@ public class TileGrid {
         }
     }
 
-    private boolean isBorderTileEncasedByWalls(int index) {
+    private boolean isBorderTileEncasedByWallsOrDoors(int index) {
         Set<Integer> seen = new HashSet<>();
         Stack<Integer> dfs = new Stack<>();
         dfs.push(index);
 
-        // DFS the index, stopping at walls
+        // DFS nones starting at the index, stopping at walls and doors
         while (!dfs.empty()) {
             int tile = dfs.pop();
 
@@ -271,6 +274,7 @@ public class TileGrid {
                 // Pass if wall; push if none, else return
                 switch (mTiles[neighbor].getTileType()) {
                     case Wall:
+                    case Door:
                         break;
                     case None:
                         if (!seen.contains(neighbor)) {
@@ -328,6 +332,7 @@ public class TileGrid {
         ArrayList<RoomTemplate.EnemyNest> nests = new ArrayList<>();
         ArrayList<RoomTemplate.Treasure> treasures = new ArrayList<>();
         ArrayList<RoomTemplate.POI> pois = new ArrayList<>();
+        ArrayList<RoomTemplate.Door> doors = new ArrayList<>(4);
 
         for (Tile tile : mTiles) {
             switch (tile.getTileType()) {
@@ -353,6 +358,9 @@ public class TileGrid {
                     // Add a new POI
                     pois.add(createRoomTemplatePOI(tile));
                     break;
+                case Door:
+                    // Add a new door
+                    doors.add(createRoomTemplateDoor(tile));
             }
         }
 
@@ -361,6 +369,7 @@ public class TileGrid {
         template.enemyNests = nests.toArray(new RoomTemplate.EnemyNest[0]);
         template.treasures = treasures.toArray(new RoomTemplate.Treasure[0]);
         template.pois = pois.toArray(new RoomTemplate.POI[0]);
+        template.doors = doors.toArray(new RoomTemplate.Door[0]);
 
         return template;
     }
@@ -388,11 +397,7 @@ public class TileGrid {
     }
 
     private RoomTemplate.POI createRoomTemplatePOI(Tile tile) {
-        RoomTemplate.POI poi = new RoomTemplate.POI();
-
-        poi.index = tile.getIndex();
-
-        return poi;
+        return tile.getPOI();
     }
 
     private RoomTemplate.Wall createRoomTemplateWall(Tile tile) {
@@ -411,6 +416,13 @@ public class TileGrid {
         return none;
     }
 
+    private RoomTemplate.Door createRoomTemplateDoor(Tile tile) {
+        RoomTemplate.Door door = new RoomTemplate.Door();
+
+        door.index = tile.getIndex();
+
+        return door;
+    }
 
     private void deserialize(File loadFile, SerializationFormat format) {
         switch(format) {
@@ -468,6 +480,9 @@ public class TileGrid {
             checkCreatingNonBorderTile(poi.index);
             createPOI(poi);
         }
+        for (RoomTemplate.Door door : template.doors) {
+            createDoor(door);
+        }
     }
 
     private void setRoomTemplateDimensions(RoomTemplate.Dimensions dimensions) {
@@ -500,6 +515,8 @@ public class TileGrid {
     private void createNone(RoomTemplate.None none) {
         mTiles[none.index].setTileType(TileType.None);
     }
+
+    private void createDoor(RoomTemplate.Door door) { mTiles[door.index].setTileType(TileType.Door); }
 
     private void checkCreatingNonBorderTile(int index) {
         if (isIndexOnBorder(index)) {

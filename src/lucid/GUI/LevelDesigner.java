@@ -35,6 +35,7 @@ public class LevelDesigner {
     private JButton mButtonClearConsole;
     private JLabel mLabelInspectorTitle;
     private InspectorPanel mPanelInspector;
+    private JRadioButton mRadioButtonDoor;
 
     private final JFrame mFrame;
 
@@ -67,20 +68,10 @@ public class LevelDesigner {
                 handleMouse(e);
             }
         });
-        mCheckBoxShowIndices.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                drawGrid();
-            }
-        });
+        mCheckBoxShowIndices.addItemListener(e -> drawGrid());
 
         mTextAreaConsole.setEditable(false);
-        mButtonClearConsole.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mTextAreaConsole.setText("");
-            }
-        });
+        mButtonClearConsole.addActionListener(e -> mTextAreaConsole.setText(""));
 
         mTextAreaConsole.append("Hi! Errors are reported to this console." + System.lineSeparator());
         mTextAreaConsole.append("Right-click on a tile to edit its fields." + System.lineSeparator());
@@ -115,6 +106,7 @@ public class LevelDesigner {
         bg.add(mRadioButtonEnemyNest);
         bg.add(mRadioButtonTreasure);
         bg.add(mRadioButtonPOI);
+        bg.add(mRadioButtonDoor);
 
         mRadioButtonFloor.setSelected(true);
 
@@ -140,7 +132,11 @@ public class LevelDesigner {
         });
         mRadioButtonPOI.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED)
-            setSelectedTileType(TileType.POI);
+                setSelectedTileType(TileType.POI);
+        });
+        mRadioButtonDoor.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED)
+                setSelectedTileType(TileType.Door);
         });
     }
 
@@ -165,7 +161,7 @@ public class LevelDesigner {
         }
 
         // Create a new tile grid of those dimensions
-        mTileGrid = new TileGrid(width, height);
+        mTileGrid = new TileGrid(width, height, getCheckedTileType());
         drawGrid();
     }
 
@@ -177,9 +173,19 @@ public class LevelDesigner {
         file.setCurrentDirectory(new File(PATH));
 
         if (file.showOpenDialog(mFrame) == JFileChooser.APPROVE_OPTION) {
-            mTileGrid = new TileGrid(file.getSelectedFile(), SerializationFormat.JSON);
+            mTileGrid = new TileGrid(file.getSelectedFile(), SerializationFormat.JSON, getCheckedTileType());
             drawGrid();
         }
+    }
+
+    private TileType getCheckedTileType() {
+        // !!!!! really bad code!
+        return mRadioButtonNone.isSelected() ? TileType.None
+                : mRadioButtonFloor.isSelected() ? TileType.Floor
+                : mRadioButtonWall.isSelected() ? TileType.Wall
+                : mRadioButtonEnemyNest.isSelected() ? TileType.Nest
+                : mRadioButtonTreasure.isSelected() ? TileType.Treasure
+                : TileType.POI;
     }
 
     private void saveGrid() {

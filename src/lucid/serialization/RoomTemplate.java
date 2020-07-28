@@ -8,6 +8,7 @@ public class RoomTemplate {
     public EnemyNest[] enemyNests;
     public POI[] pois;
     public Treasure[] treasures;
+    public Door[] doors;
 
     public static class Wall
     {
@@ -39,6 +40,11 @@ public class RoomTemplate {
     }
 
     public static class None
+    {
+        public int index;
+    }
+
+    public static class Door
     {
         public int index;
     }

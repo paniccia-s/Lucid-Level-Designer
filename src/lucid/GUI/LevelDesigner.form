@@ -116,6 +116,12 @@
               <text value="POI"/>
             </properties>
           </component>
+          <component id="41a2a" class="javax.swing.JRadioButton" binding="mRadioButtonDoor">
+            <constraints/>
+            <properties>
+              <text value="RadioButton"/>
+            </properties>
+          </component>
           <component id="afb4a" class="javax.swing.JToolBar$Separator">
             <constraints/>
             <properties/>

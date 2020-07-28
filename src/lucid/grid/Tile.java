@@ -5,10 +5,15 @@ import lucid.serialization.RoomTemplate;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Tile {
 
@@ -16,6 +21,8 @@ public class Tile {
     private static final String NEST_CHANCE = "1.0";
     private static final String NEST_MIN = "0";
     private static final String NEST_MAX = "1";
+
+    private static final String POI_TYPE = "Vendor";
 
     private final int mIndex;
 
@@ -76,6 +83,18 @@ public class Tile {
         return nest;
     }
 
+    public RoomTemplate.POI getPOI() {
+        // Throw if invalid type
+        if (mTileType != TileType.POI) throw new IllegalArgumentException("Wrong type!");
+
+        RoomTemplate.POI poi = new RoomTemplate.POI();
+
+        poi.index = mIndex;
+        poi.type = mPOI.type;
+
+        return poi;
+    }
+
 
     public void renderOnInspector(InspectorPanel inspector) {
         // The header is constant across all tile types
@@ -113,11 +132,32 @@ public class Tile {
     }
 
     private List<JComponent> getComponentsPOI() {
-        return new ArrayList<>(0);
+        List<JComponent> components = new ArrayList<>(1);
+
+        JRadioButton buttonTest1 = createRadioButtonComponent("Vendor", () -> mPOI.type = "Vendor");
+        JRadioButton buttonTest2 = createRadioButtonComponent("TotemHealth", () -> mPOI.type = "TotemHealth");
+        JRadioButton buttonTest3 = createRadioButtonComponent("TotemGold", () -> mPOI.type = "TotemGold");
+        JRadioButton buttonTest4 = createRadioButtonComponent("TotemMystery", () -> mPOI.type = "TotemMystery");
+
+        ButtonGroup bg = new ButtonGroup();
+        bg.add(buttonTest1); bg.add(buttonTest2);
+        bg.add(buttonTest3); bg.add(buttonTest4);
+
+        JPanel panel = new JPanel();
+        BoxLayout layout = new BoxLayout(panel, BoxLayout.PAGE_AXIS);
+        panel.setLayout(layout);
+        panel.add(buttonTest1);
+        panel.add(buttonTest2);
+        panel.add(buttonTest3);
+        panel.add(buttonTest4);
+
+        components.add(panel);
+
+        return components;
     }
 
     private List<JLabel> getLabelsPOI() {
-        return new ArrayList<>(0);
+        return Stream.of(new JLabel("POI Type:")).collect(Collectors.toList());
     }
 
     private List<JComponent> getComponentsTreasure() {
@@ -185,6 +225,29 @@ public class Tile {
         return String.format("TYPE: %s     INDEX: %d", mTileType.toString(), mIndex);
     }
 
+    private JTextField createTextFieldComponent(String initialString, Consumer<String> setter, int width) {
+        JTextField field = new JTextField(initialString); field.setPreferredSize(new Dimension(width, 30));
+
+        field.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                super.keyReleased(e);
+                setter.accept(field.getText());
+            }
+        });
+
+        return field;
+    }
+
+    private JRadioButton createRadioButtonComponent(String title, Runnable selector) {
+        JRadioButton button = new JRadioButton(title);
+        button.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                selector.run();
+            }
+        });
+        return button;
+    }
 
     private static class Nest {
         private String spawnRadius = NEST_RADIUS;
@@ -198,6 +261,6 @@ public class Tile {
     }
 
     private static class POI {
-
+        private String type = POI_TYPE;
     }
 }

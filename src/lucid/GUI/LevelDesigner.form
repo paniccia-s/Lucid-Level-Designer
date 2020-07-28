@@ -119,7 +119,7 @@
           <component id="41a2a" class="javax.swing.JRadioButton" binding="mRadioButtonDoor">
             <constraints/>
             <properties>
-              <text value="RadioButton"/>
+              <text value="Door"/>
             </properties>
           </component>
           <component id="afb4a" class="javax.swing.JToolBar$Separator">

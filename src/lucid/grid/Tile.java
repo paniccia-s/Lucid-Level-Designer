@@ -248,10 +248,10 @@ public class Tile {
     private List<JComponent> getComponentsDoor() {
         List<JComponent> components = new ArrayList<>(1);
 
-        JRadioButton buttonTest1 = createRadioButtonComponent("N", () -> mPOI.type = "N");
-        JRadioButton buttonTest2 = createRadioButtonComponent("E", () -> mPOI.type = "E");
-        JRadioButton buttonTest3 = createRadioButtonComponent("S", () -> mPOI.type = "S");
-        JRadioButton buttonTest4 = createRadioButtonComponent("W", () -> mPOI.type = "W");
+        JRadioButton buttonTest1 = createRadioButtonComponent("N", () -> mDoor.direction = "N");
+        JRadioButton buttonTest2 = createRadioButtonComponent("E", () -> mDoor.direction = "E");
+        JRadioButton buttonTest3 = createRadioButtonComponent("S", () -> mDoor.direction = "S");
+        JRadioButton buttonTest4 = createRadioButtonComponent("W", () -> mDoor.direction = "W");
 
         ButtonGroup bg = new ButtonGroup();
         bg.add(buttonTest1); bg.add(buttonTest2);

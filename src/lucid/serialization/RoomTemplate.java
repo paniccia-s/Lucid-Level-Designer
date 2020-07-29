@@ -47,6 +47,7 @@ public class RoomTemplate {
     public static class Door
     {
         public int index;
+        public String direction;
     }
 
 }

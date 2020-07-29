@@ -417,11 +417,7 @@ public class TileGrid {
     }
 
     private RoomTemplate.Door createRoomTemplateDoor(Tile tile) {
-        RoomTemplate.Door door = new RoomTemplate.Door();
-
-        door.index = tile.getIndex();
-
-        return door;
+        return tile.getDoor();
     }
 
     private void deserialize(File loadFile, SerializationFormat format) {
@@ -501,7 +497,7 @@ public class TileGrid {
     }
 
     private void createEnemyNest(RoomTemplate.EnemyNest nest) {
-        mTiles[nest.index].setTileType(TileType.Nest);
+        mTiles[nest.index].createNest(nest);
     }
 
     private void createTreasure(RoomTemplate.Treasure treasure) {
@@ -516,7 +512,7 @@ public class TileGrid {
         mTiles[none.index].setTileType(TileType.None);
     }
 
-    private void createDoor(RoomTemplate.Door door) { mTiles[door.index].setTileType(TileType.Door); }
+    private void createDoor(RoomTemplate.Door door) { mTiles[door.index].createDoor(door); }
 
     private void checkCreatingNonBorderTile(int index) {
         if (isIndexOnBorder(index)) {

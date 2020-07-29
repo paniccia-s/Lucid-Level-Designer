@@ -32,6 +32,7 @@ public class Tile {
     private final Nest mNest;
     private Treasure mTreasrue;
     private POI mPOI;
+    private Door mDoor;
 
     public Tile(int index, TileType tileType) {
         mIndex = index;
@@ -40,6 +41,7 @@ public class Tile {
         mNest = new Nest();
         mTreasrue = new Treasure();
         mPOI = new POI();
+        mDoor = new Door();
     }
 
     /**
@@ -95,6 +97,17 @@ public class Tile {
         return poi;
     }
 
+    public RoomTemplate.Door getDoor() {
+        // Throw if invalid type
+        if (mTileType != TileType.Door) throw new IllegalArgumentException("Wrong type!");
+
+        RoomTemplate.Door door = new RoomTemplate.Door();
+
+        door.index = mIndex;
+        door.direction = mDoor.direction;
+
+        return door;
+    }
 
     public void renderOnInspector(InspectorPanel inspector) {
         // The header is constant across all tile types
@@ -110,6 +123,11 @@ public class Tile {
                 // Nothing extra for these types
                 labels = new ArrayList<>(0);
                 components = new ArrayList<>(0);
+                break;
+            case Door:
+                // Create for door
+                labels = getLabelsDoor();
+                components = getComponentsDoor();
                 break;
             case Nest:
                 // Create for nest
@@ -221,6 +239,37 @@ public class Tile {
         return labels;
     }
 
+    private List<JLabel> getLabelsDoor() {
+        List<JLabel> labels = new ArrayList<>(1);
+        labels.add(new JLabel("Direction"));
+        return labels;
+    }
+
+    private List<JComponent> getComponentsDoor() {
+        List<JComponent> components = new ArrayList<>(1);
+
+        JRadioButton buttonTest1 = createRadioButtonComponent("N", () -> mPOI.type = "N");
+        JRadioButton buttonTest2 = createRadioButtonComponent("E", () -> mPOI.type = "E");
+        JRadioButton buttonTest3 = createRadioButtonComponent("S", () -> mPOI.type = "S");
+        JRadioButton buttonTest4 = createRadioButtonComponent("W", () -> mPOI.type = "W");
+
+        ButtonGroup bg = new ButtonGroup();
+        bg.add(buttonTest1); bg.add(buttonTest2);
+        bg.add(buttonTest3); bg.add(buttonTest4);
+
+        JPanel panel = new JPanel();
+        BoxLayout layout = new BoxLayout(panel, BoxLayout.PAGE_AXIS);
+        panel.setLayout(layout);
+        panel.add(buttonTest1);
+        panel.add(buttonTest2);
+        panel.add(buttonTest3);
+        panel.add(buttonTest4);
+
+        components.add(panel);
+
+        return components;
+    }
+
     private String getInspectorHeader() {
         return String.format("TYPE: %s     INDEX: %d", mTileType.toString(), mIndex);
     }
@@ -249,6 +298,19 @@ public class Tile {
         return button;
     }
 
+    public void createNest(RoomTemplate.EnemyNest nest) {
+        mTileType = TileType.Nest;
+        mNest.spawnAttemptsMax = String.valueOf(nest.spawnAttemptsMax);
+        mNest.spawnAttemptsMin = String.valueOf(nest.spawnAttemptsMin);
+        mNest.spawnChance = String.valueOf(nest.spawnChance);
+        mNest.spawnRadius = String.valueOf(nest.spawnRadius);
+    }
+
+    public void createDoor(RoomTemplate.Door door) {
+        mTileType = TileType.Door;
+        mDoor.direction = door.direction;
+    }
+
     private static class Nest {
         private String spawnRadius = NEST_RADIUS;
         private String spawnChance = NEST_CHANCE;
@@ -262,5 +324,9 @@ public class Tile {
 
     private static class POI {
         private String type = POI_TYPE;
+    }
+
+    private static class Door {
+        private String direction = "N";
     }
 }

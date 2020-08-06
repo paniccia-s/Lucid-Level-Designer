@@ -122,6 +122,12 @@
               <text value="Door"/>
             </properties>
           </component>
+          <component id="1eae9" class="javax.swing.JRadioButton" binding="mRadioButtonPortal">
+            <constraints/>
+            <properties>
+              <text value="Portal"/>
+            </properties>
+          </component>
           <component id="afb4a" class="javax.swing.JToolBar$Separator">
             <constraints/>
             <properties/>

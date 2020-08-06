@@ -9,6 +9,7 @@ public class RoomTemplate {
     public POI[] pois;
     public Treasure[] treasures;
     public Door[] doors;
+    public Portal portal;
 
     public static class Wall
     {
@@ -48,6 +49,15 @@ public class RoomTemplate {
     {
         public int index;
         public String direction;
+    }
+
+    public static class Portal
+    {
+        public int index;
+
+        public Portal(int index) {
+            this.index = index;
+        }
     }
 
 }

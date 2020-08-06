@@ -333,6 +333,7 @@ public class TileGrid {
         ArrayList<RoomTemplate.Treasure> treasures = new ArrayList<>();
         ArrayList<RoomTemplate.POI> pois = new ArrayList<>();
         ArrayList<RoomTemplate.Door> doors = new ArrayList<>(4);
+        RoomTemplate.Portal portal = null;
 
         for (Tile tile : mTiles) {
             switch (tile.getTileType()) {
@@ -361,6 +362,11 @@ public class TileGrid {
                 case Door:
                     // Add a new door
                     doors.add(createRoomTemplateDoor(tile));
+                    break;
+                case Portal:
+                    // Set the portal
+                    portal = new RoomTemplate.Portal(tile.getIndex());
+                    break;
             }
         }
 
@@ -370,6 +376,7 @@ public class TileGrid {
         template.treasures = treasures.toArray(new RoomTemplate.Treasure[0]);
         template.pois = pois.toArray(new RoomTemplate.POI[0]);
         template.doors = doors.toArray(new RoomTemplate.Door[0]);
+        template.portal = portal;
 
         return template;
     }
@@ -478,6 +485,9 @@ public class TileGrid {
         }
         for (RoomTemplate.Door door : template.doors) {
             createDoor(door);
+        }
+        if (template.portal != null) {
+            mTiles[template.portal.index].setTileType(TileType.Portal);
         }
     }
 

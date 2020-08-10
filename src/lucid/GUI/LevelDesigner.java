@@ -37,6 +37,7 @@ public class LevelDesigner {
     private InspectorPanel mPanelInspector;
     private JRadioButton mRadioButtonDoor;
     private JRadioButton mRadioButtonPortal;
+    private JRadioButton mRadioButtonLava;
 
     private final JFrame mFrame;
 
@@ -108,6 +109,8 @@ public class LevelDesigner {
         bg.add(mRadioButtonTreasure);
         bg.add(mRadioButtonPOI);
         bg.add(mRadioButtonDoor);
+        bg.add(mRadioButtonPortal);
+        bg.add(mRadioButtonLava);
 
         mRadioButtonFloor.setSelected(true);
 
@@ -142,6 +145,10 @@ public class LevelDesigner {
         mRadioButtonPortal.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED)
                 setSelectedTileType(TileType.Portal);
+        });
+        mRadioButtonLava.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED)
+                setSelectedTileType(TileType.Lava);
         });
     }
 

@@ -3,7 +3,7 @@ package lucid.grid;
 import java.awt.*;
 
 public enum TileType {
-    None, Floor, Wall, Nest, Treasure, POI, Door, Portal;
+    None, Floor, Wall, Nest, Treasure, POI, Door, Portal, Lava;
 
     public Color getColor() {
         switch (this) {
@@ -23,6 +23,8 @@ public enum TileType {
                 return Color.blue;
             case Portal:
                 return Color.pink;
+            case Lava:
+                return Color.orange;
             default:
                 throw new IllegalArgumentException("Bad TileType in getColor()!");
         }

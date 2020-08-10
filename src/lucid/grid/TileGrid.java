@@ -333,6 +333,7 @@ public class TileGrid {
         ArrayList<RoomTemplate.Treasure> treasures = new ArrayList<>();
         ArrayList<RoomTemplate.POI> pois = new ArrayList<>();
         ArrayList<RoomTemplate.Door> doors = new ArrayList<>(4);
+        ArrayList<RoomTemplate.Lava> lavas = new ArrayList<>(0);
         RoomTemplate.Portal portal = null;
 
         for (Tile tile : mTiles) {
@@ -367,6 +368,10 @@ public class TileGrid {
                     // Set the portal
                     portal = new RoomTemplate.Portal(tile.getIndex());
                     break;
+                case Lava:
+                    // Add a new lava
+                    lavas.add(createRoomTemplateLava(tile));
+
             }
         }
 
@@ -377,6 +382,7 @@ public class TileGrid {
         template.pois = pois.toArray(new RoomTemplate.POI[0]);
         template.doors = doors.toArray(new RoomTemplate.Door[0]);
         template.portal = portal;
+        template.lavas = lavas.toArray(new RoomTemplate.Lava[0]);
 
         return template;
     }
@@ -425,6 +431,14 @@ public class TileGrid {
 
     private RoomTemplate.Door createRoomTemplateDoor(Tile tile) {
         return tile.getDoor();
+    }
+
+    private RoomTemplate.Lava createRoomTemplateLava(Tile tile) {
+        RoomTemplate.Lava lava = new RoomTemplate.Lava();
+
+        lava.index = tile.getIndex();
+
+        return lava;
     }
 
     private void deserialize(File loadFile, SerializationFormat format) {
@@ -486,6 +500,9 @@ public class TileGrid {
         for (RoomTemplate.Door door : template.doors) {
             createDoor(door);
         }
+        for (RoomTemplate.Lava lava : template.lavas) {
+            createLava(lava);
+        }
         if (template.portal != null) {
             mTiles[template.portal.index].setTileType(TileType.Portal);
         }
@@ -523,6 +540,8 @@ public class TileGrid {
     }
 
     private void createDoor(RoomTemplate.Door door) { mTiles[door.index].createDoor(door); }
+
+    private void createLava(RoomTemplate.Lava lava) { mTiles[lava.index].setTileType(TileType.Lava); }
 
     private void checkCreatingNonBorderTile(int index) {
         if (isIndexOnBorder(index)) {

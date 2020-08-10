@@ -10,6 +10,7 @@ public class RoomTemplate {
     public Treasure[] treasures;
     public Door[] doors;
     public Portal portal;
+    public Lava[] lavas;
 
     public static class Wall
     {
@@ -58,6 +59,11 @@ public class RoomTemplate {
         public Portal(int index) {
             this.index = index;
         }
+    }
+
+    public static class Lava
+    {
+        public int index;
     }
 
 }

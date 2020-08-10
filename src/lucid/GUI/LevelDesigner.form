@@ -128,6 +128,12 @@
               <text value="Portal"/>
             </properties>
           </component>
+          <component id="89781" class="javax.swing.JRadioButton" binding="mRadioButtonLava">
+            <constraints/>
+            <properties>
+              <text value="RadioButton"/>
+            </properties>
+          </component>
           <component id="afb4a" class="javax.swing.JToolBar$Separator">
             <constraints/>
             <properties/>

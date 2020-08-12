@@ -500,9 +500,13 @@ public class TileGrid {
         for (RoomTemplate.Door door : template.doors) {
             createDoor(door);
         }
-        for (RoomTemplate.Lava lava : template.lavas) {
-            createLava(lava);
+
+        if (template.lavas != null) {
+            for (RoomTemplate.Lava lava : template.lavas) {
+                createLava(lava);
+            }
         }
+
         if (template.portal != null) {
             mTiles[template.portal.index].setTileType(TileType.Portal);
         }
